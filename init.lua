@@ -7,9 +7,9 @@ require 'options'
 
 require'plugins'
 
--- cmd 'colorscheme dracula'
+cmd 'colorscheme dracula'
 
--- cmd 'autocmd ColorScheme * highlight Normal ctermbg=NONE guibg=NONE'
+cmd 'autocmd ColorScheme * highlight Normal ctermbg=NONE guibg=NONE'
 -- cmd 'autocmd BufWrite *.ts lua vim.lsp.buf.formatting_sync(nul, 1000)'
 
 vim.cmd [[autocmd! ColorScheme * highlight NormalFloat guibg=#1f2335]]
@@ -79,48 +79,130 @@ require('telescope').setup{
     }
 }
 
-
-
 local saga = require 'lspsaga'
 saga.init_lsp_saga {
-    debug = false,
-    use_saga_diagnostic_sign = true,
-    error_sign = "",
-    warn_sign = "",
-    hint_sign = "",
-    infor_sign = "",
-    -- code action title icon
-    code_action_icon = " ",
-    code_action_prompt = {
-        enable = false,
-        sign = true,
-        sign_priority = 40,
-        virtual_text = true,
-    },
-    finder_definition_icon = "  ",
-    finder_reference_icon = "  ",
-    max_preview_lines = 20,
-    finder_action_keys = {
-        open = "o",
-        vsplit = "s",
-        split = "i",
-        quit = "q",
-        scroll_down = "<C-f>",
-        scroll_up = "<C-b>",
-    },
-    code_action_keys = {
-        quit = "q",
-        exec = "<CR>",
-    },
-    rename_action_keys = {
-        quit = "<C-c>",
-        exec = "<CR>",
-    },
-    definition_preview_icon = "  ",
-    border_style = "single",
-    rename_prompt_prefix = "➤",
-    server_filetype_map = {},
+
+
+                border_style = "single",
+                -- when cursor in saga window you config these to move
+                move_in_saga = { prev = '<C-p>',next = '<C-n>'},
+                -- Error, Warn, Info, Hint
+                -- use emoji like
+                -- { "🙀", "😿", "😾", "😺" }
+                -- or
+                diagnostic_header = { "😡", "😥", "😤", "😐" },
+                -- { "😡", "😥", "😤", "😐" }
+                -- and diagnostic_header can be a function type
+                -- must return a string and when diagnostic_header
+                -- is function type it will have a param `entry`
+                -- entry is a table type has these filed
+                -- { bufnr, code, col, end_col, end_lnum, lnum, message, severity, source }
+                -- diagnostic_header = { " ", " ", " ", "ﴞ " },
+                -- show diagnostic source
+                -- show_diagnostic_source = true,
+                -- add bracket or something with diagnostic source, just have 2 elements
+                -- diagnostic_source_bracket = {},
+                -- use emoji lightbulb in default
+                code_action_icon = "💡",
+                -- if true can press number to execute the codeaction in codeaction window
+                code_action_num_shortcut = true,
+                -- same as nvim-lightbulb but async
+                code_action_lightbulb = {
+                    enable = true,
+                    sign = true,
+                    sign_priority = 20,
+                    virtual_text = true,
+                },
+                -- finder icons
+                finder_icons = {
+                def = '  ',
+                ref = '諭 ',
+                link = '  ',
+                },
+                -- preview lines of lsp_finder and definition preview
+                max_preview_lines = 10,
+                finder_action_keys = {
+                    open = "o",
+                    vsplit = "s",
+                    split = "i",
+                    tabe = "t",
+                    quit = "q",
+                    scroll_down = "<C-f>",
+                    scroll_up = "<C-b>", -- quit can be a table
+                },
+                code_action_keys = {
+                    quit = "q",
+                    exec = "<CR>",
+                },
+                rename_action_quit = "<C-c>",
+                -- definition_preview_icon = "  ",
+                -- show symbols in winbar must nightly
+                symbol_in_winbar = {
+                    in_custom = false,
+                    enable = false,
+                    separator = ' ',
+                    show_file = true,
+                    click_support = false,
+                },
+
+                -- if you don't use nvim-lspconfig you must pass your server name and
+                -- the related filetypes into this table
+                -- like server_filetype_map = { metals = { "sbt", "scala" } }
+                server_filetype_map = {},
+
+
+                -- your configuration
+
 }
+
+
+
+
+-- local saga = require 'lspsaga'
+-- saga.init_lsp_saga {
+-- 
+-- }
+
+-- local saga = require 'lspsaga'
+-- saga.init_lsp_saga {
+--     debug = false,
+--     use_saga_diagnostic_sign = true,
+--     error_sign = "",
+--     warn_sign = "",
+--     hint_sign = "",
+--     infor_sign = "",
+--     -- code action title icon
+--     code_action_icon = " ",
+--     code_action_prompt = {
+--         enable = false,
+--         sign = true,
+--         sign_priority = 40,
+--         virtual_text = true,
+--     },
+--     finder_definition_icon = "  ",
+--     finder_reference_icon = "  ",
+--     max_preview_lines = 20,
+--     finder_action_keys = {
+--         open = "o",
+--         vsplit = "s",
+--         split = "i",
+--         quit = "q",
+--         scroll_down = "<C-f>",
+--         scroll_up = "<C-b>",
+--     },
+--     code_action_keys = {
+--         quit = "q",
+--         exec = "<CR>",
+--     },
+--     rename_action_keys = {
+--         quit = "<C-c>",
+--         exec = "<CR>",
+--     },
+--     definition_preview_icon = "  ",
+--     border_style = "single",
+--     rename_prompt_prefix = "➤",
+--     server_filetype_map = {},
+-- }
 
 
 -- To instead override globally
@@ -156,7 +238,9 @@ end
 require('Comment').setup()
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+-- capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
+
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 local lspconfig = require('lspconfig')
@@ -221,6 +305,12 @@ cmp.setup.cmdline(':', {
         { name = 'cmdline' }
     })
 })
+
+lspconfig.intelephense.setup{
+    on_attach = on_attach,
+    capabilities = capabilities,
+    root_dir = require'lspconfig'.util.root_pattern("composer.json", ".git");
+}
 
 lspconfig.tsserver.setup{
     handlers = handlers,
